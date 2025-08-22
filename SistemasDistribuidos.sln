@@ -1,0 +1,36 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "helloworld", "helloworld\helloworld.csproj", "{3A798C92-DA22-B784-11D5-249F2DEA19E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "chatp2p", "chatp2p\chatp2p.csproj", "{B08986FF-E7DD-2257-63D1-7DC3EDA16F79}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "filedownload", "filedownload\filedownload.csproj", "{1DECA286-0840-CBD0-ED75-E46B60515DF9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3A798C92-DA22-B784-11D5-249F2DEA19E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A798C92-DA22-B784-11D5-249F2DEA19E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A798C92-DA22-B784-11D5-249F2DEA19E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A798C92-DA22-B784-11D5-249F2DEA19E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B08986FF-E7DD-2257-63D1-7DC3EDA16F79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B08986FF-E7DD-2257-63D1-7DC3EDA16F79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B08986FF-E7DD-2257-63D1-7DC3EDA16F79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B08986FF-E7DD-2257-63D1-7DC3EDA16F79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DECA286-0840-CBD0-ED75-E46B60515DF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DECA286-0840-CBD0-ED75-E46B60515DF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DECA286-0840-CBD0-ED75-E46B60515DF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DECA286-0840-CBD0-ED75-E46B60515DF9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C8764D4D-966A-4F52-93BA-6F9808A5FE71}
+	EndGlobalSection
+EndGlobal
