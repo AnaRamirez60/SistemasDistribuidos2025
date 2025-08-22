@@ -20,12 +20,26 @@ namespace ChatP2P
                 Console.WriteLine($"Connected to peer at {ipAddress}:{port}");
 
                 var receiveTask = ReceiveMessage();
-                await SendMessage("Hola :D este es mi primer mensaje");
-                await receiveTask;
+
+                Console.WriteLine("Type your message and press Enter to send. Type '/exit' to close.");
+                while (true)
+                {
+                    var messageToSend = Console.ReadLine();
+                    if (string.IsNullOrEmpty(messageToSend) || messageToSend.ToLower() == "/exit")
+                    {
+                        break; 
+                    }
+                    await SendMessage(messageToSend);
+                }
+                
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error connecting to peer: {ex.Message}");
+            }
+            finally
+            {
+                Close(); 
             }
         }
 
@@ -40,12 +54,26 @@ namespace ChatP2P
                 Console.WriteLine("Connection established with a client.");
 
                 var receiveTask = ReceiveMessage();
-                await SendMessage("Hola :D este es mi primer mensaje");
-                await receiveTask;
+                
+                Console.WriteLine("Type your message and press Enter to send. Type '/exit' to close.");
+                while (true)
+                {
+                    var messageToSend = Console.ReadLine();
+                    if (string.IsNullOrEmpty(messageToSend) || messageToSend.ToLower() == "/exit")
+                    {
+                        break; 
+                    }
+                    await SendMessage(messageToSend);
+                }
+
             }
             catch (ArgumentException ex)
             {
                 Console.WriteLine("Connection closed :( " + ex.Message);
+            }
+            finally
+            {
+                Close();
             }
         }
 
@@ -55,16 +83,21 @@ namespace ChatP2P
             {
                 var stream = _tcpClient?.GetStream();
                 var reader = new StreamReader(stream, Encoding.UTF8);
-                var message = await reader.ReadLineAsync();
-                Console.WriteLine($"Peer message: {message}");
+
+                while (_tcpClient is { Connected: true })
+                {
+                    var message = await reader.ReadLineAsync();
+                    if (message == null)
+                    {
+                        Console.WriteLine("Peer has disconnected.");
+                        break; 
+                    }
+                    Console.WriteLine($"Peer message: {message}");
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error receiving message: {ex.Message}");
-            }
-            finally
-            {
-                Close();
+                Console.WriteLine($"Connection lost while receiving messages.");
             }
         }
 
@@ -79,10 +112,6 @@ namespace ChatP2P
             catch (Exception ex)
             {
                 Console.WriteLine($"Error sending message: {ex.Message}");
-            }
-            finally
-            {
-                Close();
             }
         }
 
