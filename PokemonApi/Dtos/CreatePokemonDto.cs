@@ -16,4 +16,7 @@ public class CreatePokemonDto
 
     [DataMember(Name = "stats", Order = 4)]
     public required StatsDto Stats { get; set; }
+    
+    [DataMember(Name = "hp", Order = 5)]
+    public int HP { get; set; }
 }

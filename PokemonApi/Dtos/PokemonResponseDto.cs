@@ -20,4 +20,7 @@ public class PokemonResponseDto
 
     [DataMember(Name = "stats", Order = 5)]
     public required StatsDto Stats { get; set; }
+
+    [DataMember(Name = "hp", Order = 6)]
+    public int HP { get; set; }
 }
