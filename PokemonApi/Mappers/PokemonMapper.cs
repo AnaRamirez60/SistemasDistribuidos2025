@@ -45,7 +45,7 @@ public static class PokemonMapper
             HP = pokemon.Stats.HP
         };
     }
-    
+
     public static Pokemon ToModel(this CreatePokemonDto requestPokemonDto)
     {
         return new Pokemon
@@ -79,6 +79,16 @@ public static class PokemonMapper
                 HP = pokemon.Stats.HP
             }
         };
+    }
+
+    public static IList<PokemonResponseDto> ToResponseDto(this IReadOnlyList<Pokemon> pokemons)
+    {
+        return pokemons.Select(s => s.ToResponseDto()).ToList();
+    }
+
+    public static IReadOnlyList<Pokemon> ToModel(this IReadOnlyList<PokemonEntity> pokemons)
+    {
+        return pokemons.Select(s => s.ToModel()).ToList();
     }
 
 }
