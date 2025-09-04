@@ -9,4 +9,6 @@ public interface IPeliculaRepository
     Task<Pelicula> GetPeliculaByIdAsync(Guid id, CancellationToken cancellationToken);
     Task<IReadOnlyList<Pelicula>> GetPeliculasByTitleAsync(string title, CancellationToken cancellationToken);
     Task<IReadOnlyList<Pelicula>> GetPeliculasByGenreAsync(string genre, CancellationToken cancellationToken);
+    Task DeletePeliculaAsync(Pelicula pelicula, CancellationToken cancellationToken);
+
 }

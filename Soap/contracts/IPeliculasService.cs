@@ -16,6 +16,8 @@ public interface IPeliculaService
 
     [OperationContract]
     Task<IList<PeliculaResponseDto>> GetPeliculasByTitleAsync(string title, CancellationToken cancellationToken);  
+    [OperationContract]
+    Task<DeletePeliculaResponseDto> DeletePelicula(Guid id, CancellationToken cancellationToken);
 
     [OperationContract]
     Task<IList<PeliculaResponseDto>> GetPeliculasByGenreAsync(string genre, CancellationToken cancellationToken);

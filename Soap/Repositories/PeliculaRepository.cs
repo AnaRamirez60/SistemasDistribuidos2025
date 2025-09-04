@@ -14,12 +14,18 @@ public class PeliculaRepository : IPeliculaRepository
             _context = context;
 
         }
+        public async Task DeletePeliculaAsync(Pelicula pelicula, CancellationToken cancellationToken)
+    {
+        _context.Peliculas.Remove(pelicula.ToEntity());
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
 
         public async Task<IReadOnlyList<Pelicula>> GetPeliculasByTitleAsync(string title, CancellationToken cancellationToken)
-        {
-            var peliculas = await _context.Peliculas.AsNoTracking().Where(s => s.Title.Contains(title)).ToListAsync(cancellationToken);
-            return peliculas.ToModel();
-        }
+    {
+        var peliculas = await _context.Peliculas.AsNoTracking().Where(s => s.Title.Contains(title)).ToListAsync(cancellationToken);
+        return peliculas.ToModel();
+    }
 
         public async Task<IReadOnlyList<Pelicula>> GetPeliculasByGenreAsync(string genre, CancellationToken cancellationToken)
         {

@@ -18,6 +18,17 @@ public class PeliculaService : IPeliculaService
         _peliculaRepository = peliculaRepository;
     }
 
+        public async Task<DeletePeliculaResponseDto> DeletePelicula(Guid id, CancellationToken cancellationToken)
+    {
+        var pelicula = await _peliculaRepository.GetPeliculaByIdAsync(id, cancellationToken);
+        if (!PeliculaExists(pelicula))
+        {
+            throw new FaultException("Pelicula not found");
+        }
+        await _peliculaRepository.DeletePeliculaAsync(pelicula, cancellationToken);
+        return new DeletePeliculaResponseDto { Success = true };
+    }
+
     public async Task<IList<PeliculaResponseDto>> GetPeliculasByTitleAsync(string title, CancellationToken cancellationToken)
     {
         var peliculas = await _peliculaRepository.GetPeliculasByTitleAsync(title, cancellationToken);

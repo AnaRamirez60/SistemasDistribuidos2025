@@ -2,7 +2,7 @@ using System.Runtime.Serialization;
 
 namespace PeliculaApi.Dtos;
 
-[DataContract(Name = "PeliculaResponseDto", Namespace = "http://pelicula-api/pelicula-service/")]
+[DataContract(Name = "PeliculaResponseDto", Namespace = "http://pelicula-api/pelicula-service")]
 
 public class PeliculaResponseDto
 {
