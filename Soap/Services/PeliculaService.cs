@@ -68,9 +68,10 @@ public class PeliculaService : IPeliculaService
         return pelicula is not null;
     }
 
-    private async Task<bool> IsPeliculaDuplicated(string title, CancellationToken cancellationToken)
+     private async Task<bool> IsPeliculaDuplicated(string title, CancellationToken cancellationToken)
     {
-        var pelicula = await _peliculaRepository.GetPeliculasByTitleAsync(title, cancellationToken);
-        return pelicula is not null;
+        var peliculas = await _peliculaRepository.GetPeliculasByTitleAsync(title, cancellationToken);
+        return peliculas.Any();
     }
+
 }
