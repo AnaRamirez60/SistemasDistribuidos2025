@@ -14,6 +14,13 @@ public class PeliculaRepository : IPeliculaRepository
             _context = context;
 
         }
+
+        public async Task UpdatePeliculaAsync(Pelicula pelicula, CancellationToken cancellationToken)
+    {
+        _context.Peliculas.Update(pelicula.ToEntity());
+        await _context.SaveChangesAsync(cancellationToken);
+    } 
+    
         public async Task DeletePeliculaAsync(Pelicula pelicula, CancellationToken cancellationToken)
     {
         _context.Peliculas.Remove(pelicula.ToEntity());

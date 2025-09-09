@@ -18,6 +18,39 @@ public class PeliculaService : IPeliculaService
         _peliculaRepository = peliculaRepository;
     }
 
+    public async Task<PeliculaResponseDto> UpdatePelicula(UpdatePeliculaDto peliculaToUpdate, CancellationToken cancellationToken)
+    {
+        var pelicula = await _peliculaRepository.GetPeliculaByIdAsync(peliculaToUpdate.Id, cancellationToken);
+        if (!PeliculaExists(pelicula))
+        {
+            throw new FaultException(reason: "Pelicula not found");
+        }
+
+        if(!await IsPeliculaAllowedToBeUpdated(peliculaToUpdate, cancellationToken))
+        {
+            throw new FaultException("Another pelicula with the same title already exists");
+        }
+
+        pelicula.Title = peliculaToUpdate.Title;
+        pelicula.Director = peliculaToUpdate.Director;
+        pelicula.ReleaseYear = peliculaToUpdate.ReleaseYear;
+        pelicula.Genre = peliculaToUpdate.Genre;
+        pelicula.Duration = peliculaToUpdate.Duration;
+
+        await _peliculaRepository.UpdatePeliculaAsync(pelicula, cancellationToken);
+        return pelicula.ToResponseDto();
+    }
+
+    private async Task<bool> IsPeliculaAllowedToBeUpdated(UpdatePeliculaDto peliculaToUpdate, CancellationToken cancellationToken)
+    {
+        var duplicatedPeliculas = await _peliculaRepository.GetPeliculasByTitleAsync(peliculaToUpdate.Title, cancellationToken);
+        return !duplicatedPeliculas.Any(p => p.Id != peliculaToUpdate.Id);
+    }
+
+    private bool IsTheSamePelicula(Pelicula pelicula, UpdatePeliculaDto peliculaToUpdate)
+    {
+        return pelicula.Id == peliculaToUpdate.Id;
+    }
         public async Task<DeletePeliculaResponseDto> DeletePelicula(Guid id, CancellationToken cancellationToken)
     {
         var pelicula = await _peliculaRepository.GetPeliculaByIdAsync(id, cancellationToken);
