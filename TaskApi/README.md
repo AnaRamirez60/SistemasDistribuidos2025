@@ -14,13 +14,18 @@ Sigue estos pasos en orden desde la terminal.
 
 En tu terminal:
 git clone https://github.com/AnaRamirez60/SistemasDistribuidos2025.git
+
+cd SistemasDistribuidos2025
+
 cd TaskApi
 
 2. Levantar los Servicios
 
 Ejecuta el siguiente comando desde la raíz de tu proyecto (donde se encuentra el archivo docker-compose.yml).
 
-docker-compose up -d --build
+pip3 install -r requirements.txt
+
+docker-compose up -d   
 
 ¿Qué hace este comando?
 Lee el Dockerfile, construye la imagen de la aplicación e instala todas las dependencias listadas en requirements.txt.
