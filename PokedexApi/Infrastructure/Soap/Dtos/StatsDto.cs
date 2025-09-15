@@ -1,5 +1,5 @@
 using System.Runtime.Serialization;
-namespace PokemonApi.Dtos;
+namespace PokedexApi.Infrastructure.Soap.Dtos;
 
 [DataContract(Name = "StatsDto", Namespace = "http://pokemon-api/pokemon-service/")]
 public class StatsDto

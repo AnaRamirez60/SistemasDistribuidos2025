@@ -1,21 +1,19 @@
 using System.ServiceModel;
-using PokemonApi.Dtos;
-using System.Threading;
-using System.Threading.Tasks;
-    
-namespace PokemonApi.Services;
+using PokedexApi.Infrastructure.Soap.Dtos;
+
+namespace PokedexApi.Infrastructure.Soap.Contracts;
 
 [ServiceContract(Name = "PokemonService", Namespace = "http://pokemon-api/pokemon-service/")]
-public interface IPokemonService
+public interface IPokemonContract
 {
     [OperationContract]
-    Task<PokemonResponseDto> CreatePokemon(CreatePokemonDto pokemon, CancellationToken cancell);
+    Task<PokemonResponseDto> CreatePokemon(CreatePokemonDto pokemon, CancellationToken cancellationToken);
 
     [OperationContract]
-    Task<PokemonResponseDto> GetPokemonByIdAsync(Guid id, CancellationToken cancellationToken);
+    Task<PokemonResponseDto> GetPokemonById(Guid id, CancellationToken cancellationToken);
 
     [OperationContract]
-    Task<IList<PokemonResponseDto>> GetPokemonsByNameAsync(string name, CancellationToken cancellationToken);
+    Task<IList<PokemonResponseDto>> GetPokemonsByName(string name, CancellationToken cancellationToken);
 
     [OperationContract]
     Task<DeletePokemonResponseDto> DeletePokemon(Guid id, CancellationToken cancellationToken);

@@ -15,6 +15,18 @@ public class PokemonRepository : IPokemonRepository
 
     }
 
+    public async Task UpdatePokemonAsync(Pokemon pokemon, CancellationToken cancellationToken)
+    {
+        _context.Pokemons.Update(pokemon.ToEntity());
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task DeletePokemonAsync(Pokemon pokemon, CancellationToken cancellationToken)
+    {
+        _context.Pokemons.Remove(pokemon.ToEntity());
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<Pokemon>> GetPokemonsByNameAsync(string name, CancellationToken cancellationToken)
     {
         //select * from pokemons where name like '%TEXTO%'
