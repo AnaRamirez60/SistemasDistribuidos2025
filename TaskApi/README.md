@@ -13,19 +13,20 @@ Sigue estos pasos en orden desde la terminal.
 1. Clonar el Repositorio
 
 En tu terminal:
-git clone https://github.com/AnaRamirez60/SistemasDistribuidos2025.git
 
-cd SistemasDistribuidos2025
+`git clone https://github.com/AnaRamirez60/SistemasDistribuidos2025.git`
 
-cd TaskApi
+`cd SistemasDistribuidos2025`
+
+`cd TaskApi`
 
 2. Levantar los Servicios
 
 Ejecuta el siguiente comando desde la raíz de tu proyecto (donde se encuentra el archivo docker-compose.yml).
 
-pip3 install -r requirements.txt
+`pip3 install -r requirements.txt`
 
-docker-compose up -d   
+`docker-compose up -d`
 
 ¿Qué hace este comando?
 Lee el Dockerfile, construye la imagen de la aplicación e instala todas las dependencias listadas en requirements.txt.
@@ -38,7 +39,7 @@ Levanta el contenedor de tu aplicación (taskservice) una vez que la base de dat
 
 Con los contenedores corriendo, se dbe crear las tablas en la base de datos. Esto se hace ejecutando el comando de alembic dentro del contenedor de la aplicación.
 
-alembic upgrade head
+`alembic upgrade head`
 
 Este comando le dice a Docker Compose que ejecute las migraciones de alembic upgrade head, creando la tabla tasks según los modelos de SQLAlchemy.
 
