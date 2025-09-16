@@ -73,15 +73,23 @@ Rellena el cuerpo XML de la petición y envíala.
 Crea una nueva tarea. El título y la fecha son obligatorios. Las fechas no pueden ser pasadas.
 
 Ejemplo de body:
-XML
+
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+
  <soapenv:Body>
+
   <tns:createTask xmlns:tns="task.management.soap"><!-- mandatory -->
+
    <tns:title><!-- mandatory -->string</tns:title>
+
    <tns:description>string</tns:description>
+
    <tns:endDate><!-- mandatory -->2025-12-12</tns:endDate>
+
   </tns:createTask>
+  
  </soapenv:Body>
+
 </soapenv:Envelope>
 
 2. getTaskById
@@ -89,13 +97,19 @@ XML
 Busca una tarea específica por su ID numérico.
 
 Ejemplo de body:
-XML
+
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+
  <soapenv:Body>
+
   <tns:getTaskById xmlns:tns="task.management.soap"><!-- mandatory -->
+
    <tns:task_id><!-- mandatory -->1</tns:task_id>
+
   </tns:getTaskById>
+
  </soapenv:Body>
+
 </soapenv:Envelope>
 
 3. getTaskByTitle
@@ -103,11 +117,17 @@ XML
 Busca todas las tareas que contengan una letra o palabra en su título (no es sensible a mayúsculas y minúsculas).
 
 Ejemplo de body:
-XML
+
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+
  <soapenv:Body>
+
   <tns:getTaskByTitle xmlns:tns="task.management.soap"><!-- mandatory -->
+
    <tns:title><!-- mandatory -->s</tns:title>
+
   </tns:getTaskByTitle>
+
  </soapenv:Body>
+
 </soapenv:Envelope>
