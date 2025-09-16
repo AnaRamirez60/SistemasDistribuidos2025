@@ -74,7 +74,8 @@ Crea una nueva tarea. El título y la fecha son obligatorios. Las fechas no pued
 
 Ejemplo de body:
 
-```<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+```
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 
  <soapenv:Body>
 
@@ -90,15 +91,15 @@ Ejemplo de body:
 
  </soapenv:Body>
 
-</soapenv:Envelope>```
-
+</soapenv:Envelope>
+```
 2. getTaskById
 
 Busca una tarea específica por su ID numérico.
 
 Ejemplo de body:
-
-```<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+```
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 
  <soapenv:Body>
 
@@ -110,15 +111,16 @@ Ejemplo de body:
 
  </soapenv:Body>
 
-</soapenv:Envelope>```
+</soapenv:Envelope>
+```
 
 3. getTaskByTitle
 
 Busca todas las tareas que contengan una letra o palabra en su título (no es sensible a mayúsculas y minúsculas).
 
 Ejemplo de body:
-
-```<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+```
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 
  <soapenv:Body>
 
@@ -130,7 +132,8 @@ Ejemplo de body:
 
  </soapenv:Body>
 
-</soapenv:Envelope>```
+</soapenv:Envelope>
+```
 
 ## Ejemplos de Peticiones SOAP en Postman
 
@@ -139,8 +142,8 @@ Ejemplo de body:
 Crea una nueva tarea. El título y la fecha son obligatorios. Las fechas no pueden ser pasadas.
 
 Ejemplo de body:
-
-```<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+```
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
                   xmlns:tns="task.management.soap">
 
    <soapenv:Header/>
@@ -159,16 +162,16 @@ Ejemplo de body:
 
    </soapenv:Body>
 
-</soapenv:Envelope>```
-
+</soapenv:Envelope>
+```
 
 2. getTaskById
 
 Busca una tarea específica por su ID numérico.
 
 Ejemplo de body:
-
-```<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+```
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
                   xmlns:tns="task.management.soap">
 
    <soapenv:Header/>
@@ -183,16 +186,16 @@ Ejemplo de body:
 
    </soapenv:Body>
 
-</soapenv:Envelope>```
-
+</soapenv:Envelope>
+```
 
 3. getTaskByTitle
 
 Busca todas las tareas que contengan una letra o palabra en su título (no es sensible a mayúsculas y minúsculas).
 
 Ejemplo de body:
-
-```<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+```
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
                   xmlns:tns="task.management.soap">
 
    <soapenv:Header/>
@@ -207,4 +210,5 @@ Ejemplo de body:
 
    </soapenv:Body>
 
-</soapenv:Envelope>```
+</soapenv:Envelope>
+```
