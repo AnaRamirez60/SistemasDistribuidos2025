@@ -66,7 +66,7 @@ La URL a la que se debe enviar la petición es la del endpoint (http://localhost
 
 Rellena el cuerpo XML de la petición y envíala.
 
-## Ejemplos de Peticiones SOAP
+## Ejemplos de Peticiones SOAP en Insomnia
 
 1. createTask
 
@@ -87,7 +87,7 @@ Ejemplo de body:
    <tns:endDate><!-- mandatory -->2025-12-12</tns:endDate>
 
   </tns:createTask>
-  
+
  </soapenv:Body>
 
 </soapenv:Envelope>
@@ -130,4 +130,81 @@ Ejemplo de body:
 
  </soapenv:Body>
 
+</soapenv:Envelope>
+
+## Ejemplos de Peticiones SOAP en Postman
+
+1. createTask
+
+Crea una nueva tarea. El título y la fecha son obligatorios. Las fechas no pueden ser pasadas.
+
+Ejemplo de body:
+
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:tns="task.management.soap">
+
+   <soapenv:Header/>
+
+   <soapenv:Body>
+
+      <tns:createTask>
+
+         <tns:title>string</tns:title>
+
+         <tns:description>string</tns:description>
+
+         <tns:endDate>2025-12-12</tns:endDate>
+
+      </tns:createTask>
+
+   </soapenv:Body>
+
+</soapenv:Envelope>
+
+
+2. getTaskById
+
+Busca una tarea específica por su ID numérico.
+
+Ejemplo de body:
+
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:tns="task.management.soap">
+
+   <soapenv:Header/>
+
+   <soapenv:Body>
+
+      <tns:getTaskById>
+
+         <tns:task_id>1</tns:task_id>
+
+      </tns:getTaskById>
+
+   </soapenv:Body>
+
+</soapenv:Envelope>
+
+
+3. getTaskByTitle
+
+Busca todas las tareas que contengan una letra o palabra en su título (no es sensible a mayúsculas y minúsculas).
+
+Ejemplo de body:
+
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:tns="task.management.soap">
+
+   <soapenv:Header/>
+
+   <soapenv:Body>
+
+      <tns:getTaskByTitle>
+
+         <tns:title>s</tns:title>
+
+      </tns:getTaskByTitle>
+
+   </soapenv:Body>
+   
 </soapenv:Envelope>
