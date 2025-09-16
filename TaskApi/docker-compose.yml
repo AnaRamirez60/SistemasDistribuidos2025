@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+# construye el contenedor de la base de datos MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: TaskDb
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: task
+    ports:
+      - "3306:3306"
+    networks:
+      - task-network
+# construye el contenedor de la aplicación
+  app:
+    build: .
+    container_name: taskservice
+    environment:
+      DATABASE_URL: "mysql+mysqlconnector://root:1234@TaskDb:3306/task"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+    networks:
+      - task-network
+
+networks:
+  task-network:
+    driver: bridge
