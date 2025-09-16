@@ -24,6 +24,8 @@ En tu terminal:
 
 Ejecuta el siguiente comando desde la raíz de tu proyecto (donde se encuentra el archivo docker-compose.yml).
 
+En tu terminal:
+
 `pip3 install -r requirements.txt`
 
 `docker-compose up -d`
@@ -39,9 +41,28 @@ Levanta el contenedor de tu aplicación (taskservice) una vez que la base de dat
 
 Con los contenedores corriendo, se dbe crear las tablas en la base de datos. Esto se hace ejecutando el comando de alembic dentro del contenedor de la aplicación.
 
+En tu terminal:
+
 `alembic upgrade head`
 
 Este comando le dice a Docker Compose que ejecute las migraciones de alembic upgrade head, creando la tabla tasks según los modelos de SQLAlchemy.
+
+## Resumen de Comandos en Terminal
+```
+
+git clone https://github.com/AnaRamirez60/SistemasDistribuidos2025.git
+
+cd SistemasDistribuidos2025
+
+cd TaskApi
+
+pip3 install -r requirements.txt
+
+docker-compose up -d
+
+alembic upgrade head
+```
+
 
 ## Cómo Probar la API
 Puedes usar cualquier cliente SOAP como Insomnia, Postman o SoapUI.
