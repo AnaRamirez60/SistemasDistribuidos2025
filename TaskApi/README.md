@@ -43,6 +43,25 @@ Con los contenedores corriendo, se dbe crear las tablas en la base de datos. Est
 
 Este comando le dice a Docker Compose que ejecute las migraciones de alembic upgrade head, creando la tabla tasks según los modelos de SQLAlchemy.
 
+## En caso de errores probar: 
+Crear un entorno llamado Soap
+
+`python -m venv Soap`
+
+Activar el entorno virtual
+
+`.\Soap\Scripts\Activate.ps1`
+
+`python -m pip install --upgrade pip`
+
+`pip install -r requirements.txt`
+
+`docker compose up -d`
+
+Esperar unos segundos a que se termine de levantar el servidor MySQL
+
+`python -m alembic upgrade head`
+
 ## Cómo Probar la API
 Puedes usar cualquier cliente SOAP como Insomnia, Postman o SoapUI.
 
