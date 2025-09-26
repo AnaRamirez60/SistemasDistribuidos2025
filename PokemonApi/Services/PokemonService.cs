@@ -18,7 +18,7 @@ public class PokemonService : IPokemonService
         _pokemonRepository = pokemonRepository;
     }
 
-    public async Task<PokemonResponseDto> UpdatePokemon(UpdatePokemonDto pokemonToUpdate, CancellationToken cancellationToken)
+public async Task<PokemonResponseDto> UpdatePokemon(UpdatePokemonDto pokemonToUpdate, CancellationToken cancellationToken)
     {
         var pokemon = await _pokemonRepository.GetPokemonByIdAsync(pokemonToUpdate.Id, cancellationToken);
         if (!PokemonExists(pokemon))
@@ -26,7 +26,7 @@ public class PokemonService : IPokemonService
             throw new FaultException(reason: "Pokemon not found");
         }
 
-        if (!await IsPokemonAllowedToBeUpdated(pokemonToUpdate, cancellationToken))
+        if(!await IsPokemonAllowedToBeUpdated(pokemonToUpdate, cancellationToken))
         {
             throw new FaultException("Another pokemon with the same name already exists");
         }
@@ -45,11 +45,11 @@ public class PokemonService : IPokemonService
     {
         var duplicatedPokemon = await _pokemonRepository.GetByNameAsync(pokemonToUpdate.Name, cancellationToken);
         return duplicatedPokemon is null || IsTheSamePokemon(duplicatedPokemon, pokemonToUpdate);
-    }
+    }   
 
     private bool IsTheSamePokemon(Pokemon pokemon, UpdatePokemonDto pokemonToUpdate)
     {
-        return pokemon.Id == pokemonToUpdate.Id;
+        return pokemon.Id != pokemonToUpdate.Id;
     }
 
     public async Task<DeletePokemonResponseDto> DeletePokemon(Guid id, CancellationToken cancellationToken)
@@ -103,7 +103,7 @@ public class PokemonService : IPokemonService
         var pokemon = await _pokemonRepository.GetByNameAsync(name, cancellationToken);
         return pokemon is not null;
     }
-    
+
     public async Task<PagedResponseDto> GetPokemonsAsync(Query query, CancellationToken cancellationToken)
     {
         return await _pokemonRepository.GetPokemonsAsync(query, cancellationToken);

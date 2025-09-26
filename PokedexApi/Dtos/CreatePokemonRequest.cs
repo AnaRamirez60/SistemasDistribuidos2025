@@ -5,12 +5,12 @@ namespace PokedexApi.Dtos;
 public class CreatePokemonRequest
 {
     [Required]
-    public required string Name { get; set; }
+    public string Name { get; set; }
     [MinLength(3)]
-    public required string Type { get; set; }
+    public string Type { get; set; }
     public int Level { get; set; }
 
-    public required StatsRequest Stats { get; set; }
+    public StatsRequest Stats { get; set; }
 }
 public class StatsRequest
 {

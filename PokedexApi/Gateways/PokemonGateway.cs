@@ -24,12 +24,11 @@ public class PokemonGateway : IPokemonGateway
 
     public async Task<PagedResponse<Pokemon>> GetPokemonsAsync(string name, string type, int pageSize, int pageNumber, string orderBy, string orderDirection, CancellationToken cancellationToken)
     {
-        // Para búsquedas parciales, obtenemos todos los datos y filtramos después
         var query = new Query
         {
-            Name = string.Empty, // Buscar todos sin filtro de nombre
-            Type = string.Empty, // Buscar todos sin filtro de tipo
-            PageSize = 100, // Obtener más datos para filtrar
+            Name = string.Empty, 
+            Type = string.Empty, 
+            PageSize = 100, 
             PageNumber = 1,
             OrderBy = orderBy,
             OrderDirection = orderDirection
@@ -38,13 +37,11 @@ public class PokemonGateway : IPokemonGateway
         var paginated = await _pokemonContract.GetPokemons(query, cancellationToken);
         var pagedResponse = paginated.ToPagedResponse();
 
-        // Filtrar los resultados por búsqueda parcial
         var filteredData = pagedResponse.Data.Where(p => 
             (string.IsNullOrEmpty(name) || p.Name.Contains(name, StringComparison.OrdinalIgnoreCase)) &&
             (string.IsNullOrEmpty(type) || p.Type.Contains(type, StringComparison.OrdinalIgnoreCase))
         );
 
-        // Aplicar paginación manual
         var totalFilteredRecords = filteredData.Count();
         var totalPages = (int)Math.Ceiling((double)totalFilteredRecords / pageSize);
         var paginatedData = filteredData
@@ -113,7 +110,7 @@ public class PokemonGateway : IPokemonGateway
         return pokemons.ToModel();
     }
 
-    public async Task<Pokemon> CreatePokemonAsync(Pokemon pokemon, CancellationToken cancellationToken)
+     public async Task<Pokemon> CreatePokemonAsync(Pokemon pokemon, CancellationToken cancellationToken)
     {
         try
         {

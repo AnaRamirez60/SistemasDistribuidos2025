@@ -42,11 +42,11 @@ public class PokemonRepository : IPokemonRepository
         return pokemon?.ToModel() ?? throw new InvalidOperationException($"Pokemon with id {id} not found");
     }
 
-    public async Task<Pokemon> GetByNameAsync(string name, CancellationToken cancellationToken)
+   public async Task<Pokemon> GetByNameAsync(string name, CancellationToken cancellationToken)
     {
         //select * from pokemons where name like '%TEXTO%'
-        var pokemon = await _context.Pokemons.AsNoTracking().FirstOrDefaultAsync(s => s.Name.Contains(name), cancellationToken);
-        return pokemon?.ToModel() ?? throw new InvalidOperationException($"Pokemon with name '{name}' not found");
+        var pokemon = await _context.Pokemons.AsNoTracking().FirstOrDefaultAsync(s => s.Name.Contains(name));
+        return pokemon.ToModel();
     }
 
     public async Task<Pokemon> CreateAsync(Pokemon pokemon, CancellationToken cancellationToken)
