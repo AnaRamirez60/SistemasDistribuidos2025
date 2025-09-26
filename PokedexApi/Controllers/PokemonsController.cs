@@ -6,6 +6,7 @@ using System.Drawing.Text;
 using System.ServiceModel.Channels;
 using PokedexApi.Models;
 using PokedexApi.Exceptions;
+using PokedexApi.Infrastructure.Soap.Dtos;
 
 namespace PokedexApi.Controllers;
 
@@ -29,43 +30,15 @@ public class PokemonsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IList<PokemonResponse>>> GetPokemonsAsync([FromQuery] string name, [FromQuery] string type, [FromQuery] int? pageSize = 10, [FromQuery] int? pageNumber = 1, [FromQuery] string orderBy = "name", [FromQuery] string orderDirection = "asc", CancellationToken cancellationToken= default)
+    public async Task<ActionResult<IList<PokemonResponse>>> GetPokemonsAsync([FromQuery] string name, [FromQuery] string type, [FromQuery] int pageSize, [FromQuery] int pageNumber, [FromQuery] string orderBy, [FromQuery] string orderDirection, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(type))
         {
             return BadRequest(new { Message = "Type query parameter is required" });
         }
 
-        int finalPageSize = pageSize ?? 10;
-        int finalPageNumber = pageNumber ?? 1;
-        string finalOrderBy = string.IsNullOrEmpty(orderBy) ? "name" : orderBy;
-        string finalOrderDirection = string.IsNullOrEmpty(orderDirection) ? "asc" : orderDirection.ToLower();
-
-         if (finalOrderDirection != "asc" && finalOrderDirection != "desc")
-    {
-        return BadRequest(new { Message = "OrderDirection must be 'asc' or 'desc'" });
-    }
-        var allPokemons = await _pokemonService.GetPokemonsAsync(name, type, finalPageSize, finalPageNumber, finalOrderBy, finalOrderDirection,cancellationToken);
-        var totalRecords = allPokemons.Count;
-        var totalPages = (int)Math.Ceiling(totalRecords / (double)finalPageSize);
-        var sorted = finalOrderDirection == "asc"
-        ? allPokemons.OrderBy(s => orderBy.ToLower() == "type" ? s.Type : s.Name).ToList(): allPokemons.OrderByDescending(s => orderBy.ToLower() == "type" ? s.Type : s.Name).ToList();
-
-        var pagedData = sorted
-        .Skip((finalPageNumber - 1) * finalPageSize)
-        .Take(finalPageSize)
-        .ToResponse(); 
-
-            var response = new PagedResponse<PokemonResponse>
-    {
-        PageNumber = finalPageNumber,
-        PageSize = finalPageSize,
-        TotalRecords = totalRecords,
-        TotalPages = totalPages,
-        Data = pagedData
-    };
-
-    return Ok(response);
+    var pokemons = await _pokemonService.GetPokemonsAsync(name, type, pageSize, pageNumber, orderBy, orderDirection, cancellationToken);
+        return Ok(pokemons.ToResponse());
     }
 
     [HttpPost]
@@ -73,7 +46,7 @@ public class PokemonsController : ControllerBase
     {
         try
         {
-            if (!IsValidAttack(createPokemon))
+            if (!IsValidAttack(createPokemon.Stats.Attack))
             {
                 return BadRequest(new { Message = "Attack does not have a valid value" });
             }
@@ -84,7 +57,7 @@ public class PokemonsController : ControllerBase
         {
             return Conflict(new { Message = e.Message });
         }
-       
+
     }
 
     [HttpDelete("{id}")]
@@ -93,7 +66,7 @@ public class PokemonsController : ControllerBase
         try
         {
             await _pokemonService.DeletePokemonAsync(id, cancellationToken);
-            return NoContent(); 
+            return NoContent();
         }
         catch (PokemonNotFoundException)
         {
@@ -101,8 +74,56 @@ public class PokemonsController : ControllerBase
         }
     }
 
-        private static bool IsValidAttack(CreatePokemonRequest createPokemon)
+       [HttpPut("{id}")]
+public async Task<IActionResult> UpdatePokemonAsync(Guid id, [FromBody] UpdatePokemonRequest pokemon, CancellationToken cancellationToken)
+{
+    try
     {
-        return createPokemon.Stats.Attack > 0;
+        if(!IsValidAttack(pokemon.Stats.Attack))
+        {
+            return BadRequest(new { Message = "Invalid Attack Value" }); // 400
+        }
+
+       await _pokemonService.UpdatePokemonAsync(pokemon.ToModel(id), cancellationToken);
+            return NoContent(); // 204
     }
+    catch(PokemonNotFoundException)
+    {
+        return NotFound(); // 404
+    }
+    catch(PokemonAlreadyExistsException ex)
+    {
+        return Conflict(new { Message = ex.Message }); // 409
+    }
+}
+
+    [HttpPatch("{id}")]
+    public async Task<ActionResult<PokemonResponse>> PatchPokemonAsync(Guid id, [FromBody] PatchPokemonRequest pokemonRequest, CancellationToken cancellationToken)
+    {
+         try
+    {
+        if(pokemonRequest.Attack.HasValue && !IsValidAttack(pokemonRequest.Attack.Value))
+        {
+            return BadRequest(new { Message = "Invalid Attack Value" }); // 400
+        }
+
+        var pokemon = await _pokemonService.PatchPokemonAsync(id, pokemonRequest.Name,pokemonRequest.Type, pokemonRequest.Attack,pokemonRequest.Defense, pokemonRequest.Speed , cancellationToken);
+            return Ok(pokemon.ToResponse()); // 200
+    }
+    catch(PokemonNotFoundException)
+    {
+        return NotFound(); // 404
+    }
+    catch(PokemonAlreadyExistsException ex)
+    {
+        return Conflict(new { Message = ex.Message }); // 409
+    }
+    
+}
+
+    private static bool IsValidAttack(int attack)
+    {
+        return attack > 0;
+    }
+    
 }

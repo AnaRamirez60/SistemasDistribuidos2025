@@ -1,10 +1,10 @@
-namespace PokedexApi.Dtos;
+namespace PokedexApi.Models;
 
-public class PagedResponse<T>
+public class PagedResult<T>
 {
     public int PageNumber { get; set; }
     public int PageSize { get; set; }
     public int TotalRecords { get; set; }
     public int TotalPages { get; set; }
-    public required IEnumerable<T> Data { get; set; }
+    public IList<T> Data { get; set; } = new List<T>();
 }

@@ -3,6 +3,9 @@ using PokedexApi.Infrastructure.Soap.Contracts;
 using PokedexApi.Mappers;
 using PokedexApi.Models;
 using PokedexApi.Exceptions;
+using PokedexApi.Dtos;
+using PokedexApi.Infrastructure.Soap.Dtos;
+
 
 namespace PokedexApi.Gateways;
 
@@ -17,6 +20,63 @@ public class PokemonGateway : IPokemonGateway
         var endpoint = new EndpointAddress(uri: configuration.GetValue<string>(key: "PokemonService:Url"));
         _pokemonContract = new ChannelFactory<IPokemonContract>(binding, endpoint).CreateChannel();
         _logger = logger;
+    }
+
+    public async Task<PagedResponse<Pokemon>> GetPokemonsAsync(string name, string type, int pageSize, int pageNumber, string orderBy, string orderDirection, CancellationToken cancellationToken)
+    {
+        // Para búsquedas parciales, obtenemos todos los datos y filtramos después
+        var query = new Query
+        {
+            Name = string.Empty, // Buscar todos sin filtro de nombre
+            Type = string.Empty, // Buscar todos sin filtro de tipo
+            PageSize = 100, // Obtener más datos para filtrar
+            PageNumber = 1,
+            OrderBy = orderBy,
+            OrderDirection = orderDirection
+        };
+
+        var paginated = await _pokemonContract.GetPokemons(query, cancellationToken);
+        var pagedResponse = paginated.ToPagedResponse();
+
+        // Filtrar los resultados por búsqueda parcial
+        var filteredData = pagedResponse.Data.Where(p => 
+            (string.IsNullOrEmpty(name) || p.Name.Contains(name, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrEmpty(type) || p.Type.Contains(type, StringComparison.OrdinalIgnoreCase))
+        );
+
+        // Aplicar paginación manual
+        var totalFilteredRecords = filteredData.Count();
+        var totalPages = (int)Math.Ceiling((double)totalFilteredRecords / pageSize);
+        var paginatedData = filteredData
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        return new PagedResponse<Pokemon>
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalRecords = totalFilteredRecords,
+            TotalPages = totalPages,
+            Data = paginatedData
+        };
+    }
+
+
+    public async Task UpdatePokemonAsync(Pokemon pokemon, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _pokemonContract.UpdatePokemon(pokemon.ToUpdateRequest(), cancellationToken);
+        }
+        catch (FaultException ex) when (ex.Message == "Pokemon not found")
+        {
+            throw new PokemonNotFoundException(pokemon.Id);
+        }
+        catch (FaultException ex) when (ex.Message == "Another pokemon with the same name already exists")
+        {
+            throw new PokemonAlreadyExistsException(pokemon.Name);
+        }
     }
 
     public async Task DeletePokemonAsync(Guid id, CancellationToken cancellationToken)
@@ -42,7 +102,7 @@ public class PokemonGateway : IPokemonGateway
         catch (FaultException ex) when (ex.Message == "Pokemon not found")
         {
             _logger.LogWarning(ex, message: "Pokemon not found");
-            return null;
+            throw new PokemonNotFoundException(id);
         }
     }
 

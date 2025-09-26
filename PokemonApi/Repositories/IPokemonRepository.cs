@@ -1,3 +1,4 @@
+using PokemonApi.Dtos;
 using PokemonApi.Models;
 using PokemonApi.Services;
 
@@ -12,4 +13,6 @@ public interface IPokemonRepository
     Task DeletePokemonAsync(Pokemon pokemon, CancellationToken cancellationToken);
 
     Task UpdatePokemonAsync(Pokemon pokemon, CancellationToken cancellationToken);
+
+    Task<PagedResponseDto> GetPokemonsAsync(Query query, CancellationToken cancellationToken);
 }
