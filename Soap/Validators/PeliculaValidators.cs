@@ -11,6 +11,10 @@ public static class PeliculaValidator
     public static CreatePeliculaDto ValidateGenre(this CreatePeliculaDto pelicula) =>
         string.IsNullOrEmpty(pelicula.Genre) ? throw new FaultException("Pelicula genre is required") : pelicula;
 
+    public static CreatePeliculaDto ValidateDuration(this CreatePeliculaDto pelicula) =>
+        pelicula.Duration <= 0 ? throw new FaultException("Pelicula duration is required") : pelicula;
+
+
 }
 
 
