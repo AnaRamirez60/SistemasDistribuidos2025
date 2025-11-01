@@ -103,4 +103,9 @@ public async Task<PokemonResponseDto> UpdatePokemon(UpdatePokemonDto pokemonToUp
         var pokemon = await _pokemonRepository.GetByNameAsync(name, cancellationToken);
         return pokemon is not null;
     }
+
+    public async Task<PagedResponseDto> GetPokemonsAsync(Query query, CancellationToken cancellationToken)
+    {
+        return await _pokemonRepository.GetPokemonsAsync(query, cancellationToken);
+    }
 }

@@ -21,4 +21,8 @@ public interface IPokemonService
     Task<DeletePokemonResponseDto> DeletePokemon(Guid id, CancellationToken cancellationToken);
     [OperationContract]
     Task<PokemonResponseDto> UpdatePokemon(UpdatePokemonDto pokemon, CancellationToken cancellationToken);  
+
+    [OperationContract]
+    Task<PagedResponseDto> GetPokemonsAsync(Query query, CancellationToken cancellationToken);
+
 }
