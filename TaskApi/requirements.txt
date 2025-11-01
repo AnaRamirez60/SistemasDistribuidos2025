@@ -1,0 +1,7 @@
+spyne
+gunicorn
+sqlalchemy
+alembic
+mysql-connector-python
+lxml
+werkzeug==2.3.7 
