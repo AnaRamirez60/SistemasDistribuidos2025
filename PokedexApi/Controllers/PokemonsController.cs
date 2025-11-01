@@ -7,6 +7,7 @@ using System.ServiceModel.Channels;
 using PokedexApi.Models;
 using PokedexApi.Exceptions;
 using PokedexApi.Infrastructure.Soap.Dtos;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PokedexApi.Controllers;
 
@@ -23,6 +24,7 @@ public class PokemonsController : ControllerBase
 
     //localhost:PORT/api/v1/pokemons/
     [HttpGet("{id}", Name = "GetPokemonByIdAsync")]
+    [Authorize(Policy ="Read")]
     public async Task<ActionResult<PokemonResponse>> GetPokemonByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var pokemon = await _pokemonService.GetPokemonByIdAsync(id, cancellationToken);
@@ -30,6 +32,7 @@ public class PokemonsController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Policy ="Read")]
     public async Task<ActionResult<IList<PokemonResponse>>> GetPokemonsAsync([FromQuery] string name, [FromQuery] string type, [FromQuery] int pageSize, [FromQuery] int pageNumber, [FromQuery] string orderBy, [FromQuery] string orderDirection, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(type))
@@ -42,6 +45,7 @@ public class PokemonsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<PokemonResponse>> CreatePokemonAsync([FromBody] CreatePokemonRequest createPokemon, CancellationToken cancellationToken)
     {
         try
@@ -61,6 +65,7 @@ public class PokemonsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Policy = "Write")]
     public async Task<ActionResult> DeletePokemonAsync(Guid id, CancellationToken cancellationToken)
     {
         try
@@ -74,7 +79,9 @@ public class PokemonsController : ControllerBase
         }
     }
 
-       [HttpPut("{id}")]
+    [HttpPut("{id}")]
+    [Authorize(Policy = "Write")]
+   
 public async Task<IActionResult> UpdatePokemonAsync(Guid id, [FromBody] UpdatePokemonRequest pokemon, CancellationToken cancellationToken)
 {
     try
@@ -98,6 +105,8 @@ public async Task<IActionResult> UpdatePokemonAsync(Guid id, [FromBody] UpdatePo
 }
 
     [HttpPatch("{id}")]
+        [Authorize(Policy = "Write")]
+
     public async Task<ActionResult<PokemonResponse>> PatchPokemonAsync(Guid id, [FromBody] PatchPokemonRequest pokemonRequest, CancellationToken cancellationToken)
     {
          try
