@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package shoppb;
+
+option csharp_namespace = "ShopApi";
+
+import "google/protobuf/timestamp.proto";
+
+service ShopService {
+    rpc CreateShops (stream CreateShopRequest) returns (CreateShopResponse);
+    rpc GetAllShopsByName (ShopsByNameRequest) returns (stream ShopResponse);
+    }
+
+
+message ShopsByNameRequest {
+    string name = 1;
+}
+
+message CreateShopResponse {
+    int32 success_count = 1;
+    repeated ShopResponse shops = 2;
+}
+
+message CreateShopRequest {
+    string name = 1;
+    string category = 2;
+    string description = 3;
+    int32 price = 4;
+    int32 cost = 5;
+    google.protobuf.Timestamp expiration_date = 6;
+    int32 stock = 7;
+}
+
+message ShopResponse {
+    string id = 1;
+    string name = 2;
+    string category = 3;
+    string description = 4;
+    int32 price = 5;
+    int32 cost = 6;
+    google.protobuf.Timestamp expiration_date = 7;
+    int32 stock = 8;
+    google.protobuf.Timestamp created_at = 9;
+}
