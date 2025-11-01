@@ -18,6 +18,8 @@ public interface IPeliculaService
     Task<DeletePeliculaResponseDto> DeletePelicula(Guid id, CancellationToken cancellationToken);
     [OperationContract]
     Task<IList<PeliculaResponseDto>> GetPeliculasByGenreAsync(string genre, CancellationToken cancellationToken);
-     [OperationContract]
+    [OperationContract]
+    Task<PagedResponseDto> GetPeliculas(Query query, CancellationToken cancellationToken);
+    [OperationContract]
     Task<PeliculaResponseDto> UpdatePelicula(UpdatePeliculaDto pelicula, CancellationToken cancellationToken);
 }

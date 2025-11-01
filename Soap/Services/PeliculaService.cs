@@ -18,7 +18,7 @@ public class PeliculaService : IPeliculaService
         _peliculaRepository = peliculaRepository;
     }
 
-    public async Task<PeliculaResponseDto> UpdatePelicula(UpdatePeliculaDto peliculaToUpdate, CancellationToken cancellationToken)
+   public async Task<PeliculaResponseDto> UpdatePelicula(UpdatePeliculaDto peliculaToUpdate, CancellationToken cancellationToken)
     {
         var pelicula = await _peliculaRepository.GetPeliculaByIdAsync(peliculaToUpdate.Id, cancellationToken);
         if (!PeliculaExists(pelicula))
@@ -28,7 +28,7 @@ public class PeliculaService : IPeliculaService
 
         if(!await IsPeliculaAllowedToBeUpdated(peliculaToUpdate, cancellationToken))
         {
-            throw new FaultException("Another pelicula with the same title already exists");
+            throw new FaultException("Another pelicula with the same name already exists");
         }
 
         pelicula.Title = peliculaToUpdate.Title;
@@ -49,17 +49,7 @@ public class PeliculaService : IPeliculaService
 
     private bool IsTheSamePelicula(Pelicula pelicula, UpdatePeliculaDto peliculaToUpdate)
     {
-        return pelicula.Id == peliculaToUpdate.Id;
-    }
-        public async Task<DeletePeliculaResponseDto> DeletePelicula(Guid id, CancellationToken cancellationToken)
-    {
-        var pelicula = await _peliculaRepository.GetPeliculaByIdAsync(id, cancellationToken);
-        if (!PeliculaExists(pelicula))
-        {
-            throw new FaultException("Pelicula not found");
-        }
-        await _peliculaRepository.DeletePeliculaAsync(pelicula, cancellationToken);
-        return new DeletePeliculaResponseDto { Success = true };
+        return pelicula.Id != peliculaToUpdate.Id;
     }
 
     public async Task<IList<PeliculaResponseDto>> GetPeliculasByTitleAsync(string title, CancellationToken cancellationToken)
@@ -74,9 +64,54 @@ public class PeliculaService : IPeliculaService
         return peliculas.ToResponseDto();
     }
 
-    public async Task<PeliculaResponseDto> GetPeliculaByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<PagedResponseDto> GetPeliculas(Query query, CancellationToken cancellationToken)
+    {
+        // Debug: Log de parámetros recibidos en el servicio
+        Console.WriteLine($"Servicio SOAP - Query recibida: Title='{query.Title}', Type='{query.Type}', PageNumber={query.PageNumber}, PageSize={query.PageSize}, OrderBy='{query.OrderBy}', OrderDirection='{query.OrderDirection}'");
+        
+        // Validar parámetros de paginación
+        if (query.PageNumber < 1)
+        {
+            Console.WriteLine($"Error: PageNumber inválido: {query.PageNumber}");
+            throw new FaultException("PageNumber must be greater than 0");
+        }
+        
+        if (query.PageSize <= 0 || query.PageSize > 100)
+        {
+            Console.WriteLine($"Error: PageSize inválido: {query.PageSize}");
+            throw new FaultException("PageSize must be between 1 and 100");
+        }
+
+        Console.WriteLine("Parámetros válidos, enviando al repository...");
+        var result = await _peliculaRepository.GetPeliculasAsync(query, cancellationToken);
+        Console.WriteLine($"Resultado: {result.Data.Count} registros de {result.TotalRecords} totales, página {result.PageNumber}/{result.TotalPages}");
+        
+        return result;
+    }
+
+    public async Task<DeletePeliculaResponseDto> DeletePelicula(Guid id, CancellationToken cancellationToken)
     {
         var pelicula = await _peliculaRepository.GetPeliculaByIdAsync(id, cancellationToken);
+        if (!PeliculaExists(pelicula))
+        {
+            throw new FaultException("Pelicula not found");
+        }
+
+        await _peliculaRepository.DeletePeliculaAsync(pelicula, cancellationToken);
+        return new DeletePeliculaResponseDto { Success = true };
+    }
+
+    public async Task<PeliculaResponseDto> GetPeliculaByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        Console.WriteLine($"=== GetPeliculaByIdAsync DEBUG ===");
+        Console.WriteLine($"ID recibido: {id}");
+        Console.WriteLine($"ID tipo: {id.GetType()}");
+        Console.WriteLine($"ID como string: '{id.ToString()}'");
+        
+        var pelicula = await _peliculaRepository.GetPeliculaByIdAsync(id, cancellationToken);
+        Console.WriteLine($"Película obtenida del repository: {(pelicula == null ? "NULL" : $"ID={pelicula.Id}, Title='{pelicula.Title}'")}");
+        Console.WriteLine($"PeliculaExists resultado: {PeliculaExists(pelicula)}");
+        
         return PeliculaExists(pelicula) ? pelicula.ToResponseDto() : throw new FaultException("Pelicula not found");
     }
 

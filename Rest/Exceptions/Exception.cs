@@ -6,10 +6,17 @@ public class PeliculaNotFoundException : Exception
     {
     }
 }
-    
-    public class InvalidIdException : Exception
+
+public class PeliculaAlreadyExistsException : Exception
+{
+    public PeliculaAlreadyExistsException(string peliculaName) : base($"Pelicula {peliculaName} already exists")
     {
-        public InvalidIdException(Guid id) : base($"Invalid Id: {id}")
-        {
-        }
     }
+}
+
+public class InvalidIdException : Exception
+{
+    public InvalidIdException(Guid id) : base($"Invalid Id: {id}")
+    {
+    }
+}
