@@ -24,9 +24,7 @@ En tu terminal:
 
 Ejecuta el siguiente comando desde la raíz de tu proyecto (donde se encuentra el archivo docker-compose.yml).
 
-`pip3 install -r requirements.txt`
-
-`docker-compose up -d`
+`docker compose up --build -d`
 
 ¿Qué hace este comando?
 Lee el Dockerfile, construye la imagen de la aplicación e instala todas las dependencias listadas en requirements.txt.
@@ -38,8 +36,6 @@ Levanta el contenedor de tu aplicación (taskservice) una vez que la base de dat
 3. Ejecutar las Migraciones de la Base de Datos
 
 Con los contenedores corriendo, se dbe crear las tablas en la base de datos. Esto se hace ejecutando el comando de alembic dentro del contenedor de la aplicación.
-
-`alembic upgrade head`
 
 Este comando le dice a Docker Compose que ejecute las migraciones de alembic upgrade head, creando la tabla tasks según los modelos de SQLAlchemy.
 
@@ -56,11 +52,9 @@ Activar el entorno virtual
 
 `pip install -r requirements.txt`
 
-`docker compose up -d`
+`docker compose up --build -d`
 
 Esperar unos segundos a que se termine de levantar el servidor MySQL
-
-`python -m alembic upgrade head`
 
 ## Cómo Probar la API
 Puedes usar cualquier cliente SOAP como Insomnia, Postman o SoapUI.
