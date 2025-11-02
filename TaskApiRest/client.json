@@ -1,0 +1,8 @@
+{
+  "client_id": "machine-client",
+  "client_secret": "machinesecret",
+  "grant_types": ["client_credentials"],
+  "response_types": ["token"],
+  "scope": "read write",
+  "token_endpoint_auth_method": "client_secret_post"
+}

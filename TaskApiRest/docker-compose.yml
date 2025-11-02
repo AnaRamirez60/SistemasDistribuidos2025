@@ -1,0 +1,156 @@
+services:
+  # Base de datos del api soap (parcial 1)
+  soap-db:
+    image: mysql:8.0
+    container_name: soap-db
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: task
+    ports:
+      - "3307:3306" 
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - microservices_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p1234"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Servicio del api soap (parcial 1)
+  taskapi-soap:
+    build:
+      context: ../TaskApi
+      dockerfile: Dockerfile
+    container_name: taskapi-soap
+    environment:
+      DATABASE_URL: "mysql+mysqlconnector://root:1234@soap-db:3306/task"
+    ports:
+      - "8001:8000"
+    depends_on:
+      soap-db:
+        condition: service_healthy
+    networks:
+      - microservices_net
+    volumes:
+      - ../TaskApi:/code
+    command: >-
+      sh -c 'for i in 1 2 3 4 5; do
+        alembic upgrade head && break || sleep 2;
+      done
+      && gunicorn --workers 4 --bind 0.0.0.0:8000 app.main:app'
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import socket,sys; s=socket.socket(); s.settimeout(2); s.connect((\"127.0.0.1\",8000)); s.close()' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+
+  # Servicio de api rest
+  taskapi-rest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: taskapi-rest
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      taskapi-soap:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      hydra:
+        condition: service_started
+    networks:
+      - microservices_net
+    volumes:
+      - .:/code
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Redis para caché
+  redis:
+    image: redis:7-alpine
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - microservices_net
+
+  # Hydra para la autenticación
+  hydra-postgres:
+    image: postgres:14-alpine
+    container_name: hydra-postgres
+    environment:
+      POSTGRES_USER: hydra
+      POSTGRES_PASSWORD: secretpassword
+      POSTGRES_DB: hydra
+    ports:
+      - "5433:5432" 
+    volumes:
+      - hydra_db_data:/var/lib/postgresql/data
+    networks:
+      - microservices_net
+
+  hydra-migrate:
+    image: oryd/hydra:latest
+    container_name: hydra-migrate
+    environment:
+      DSN: "postgres://hydra:secretpassword@hydra-postgres:5432/hydra?sslmode=disable&max_conns=20&max_idle_conns=4"
+    command: migrate sql -e --yes
+    depends_on:
+      - hydra-postgres
+    networks:
+      - microservices_net
+    restart: on-failure
+
+  hydra:
+    image: oryd/hydra:latest
+    container_name: hydra-auth
+    ports:
+      - "4444:4444" 
+      - "4445:4445"
+    command: serve all --dev
+    environment:
+      DSN: "postgres://hydra:secretpassword@hydra-postgres:5432/hydra?sslmode=disable"
+      URLS_SELF_ISSUER: http://hydra-auth:4444
+      URLS_LOGIN: http://127.0.0.1:8000/login
+      URLS_CONSENT: http://127.0.0.1:8000/consent
+      SECRETS_SYSTEM: "you-should-change-this"
+      OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES: "public,pairwise"
+      OIDC_SUBJECT_IDENTIFIERS_PAIRWISE_SALT: "you-should-change-this-too"
+    depends_on:
+      - hydra-migrate
+    networks:
+      - microservices_net
+
+ # Contenedor helper para ejecutar el script
+  helper:
+    build:
+      context: .
+      dockerfile: Dockerfile.helper
+    container_name: helper
+    depends_on:
+      - hydra
+      - taskapi-rest
+    volumes:
+      - ./hydra-client.sh:/hydra-client.sh:ro
+      - ./client.json:/client.json:ro
+    networks:
+      - microservices_net     
+
+# redes
+networks:
+  microservices_net:
+    driver: bridge
+
+#volumenes
+volumes:
+  mysql_data: 
+  hydra_db_data:
+  redis_data:

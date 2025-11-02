@@ -1,0 +1,13 @@
+# Dockerfile.helper
+# Imagen para ejecutar el cliente de hydra y probar la api en cualquier sistema operativo
+FROM ubuntu:22.04
+
+RUN apt-get update && \
+    apt-get install -y curl jq bash && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY hydra-client.sh /hydra-client.sh
+COPY client.json /client.json
+
+RUN chmod +x /hydra-client.sh
+CMD ["sh", "-c", "sed -i 's/\\r$//' /hydra-client.sh 2>/dev/null || true && bash /hydra-client.sh"]
