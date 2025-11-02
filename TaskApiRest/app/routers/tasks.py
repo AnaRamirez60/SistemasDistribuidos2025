@@ -109,7 +109,7 @@ def getAllTask(
         # Para cualquier otro tipo, lista vacía
         return []
 
-    # Normalizar la lista de tareas
+    # Normalizar la lista de tareas, buscando claves comunes y asegurando que es una lista
     if "tasks" in response_dict:
         tasks_value = response_dict.get("tasks")
     elif "TaskModel" in response_dict:

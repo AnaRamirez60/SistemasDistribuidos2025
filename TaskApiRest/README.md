@@ -25,23 +25,9 @@ Está desarrollado en Python utilizando el framework FastAPI.
     ```bash
     cd TaskApiRest
     ```
-
-    Configurar Entorno Virtual 
-    Crea y activa un entorno virtual de Python para instalar las dependencias de forma aislada. Navega a la carpeta del proyecto antes de ejecutar:
-    ```bash
-    python3 -m venv .venv
-
-    Activar el entorno (Linux/macOS)
-    source .venv/bin/activate
-    (Windows)
-    .venv\Scripts\activate
-
-    pip install -r requirements.txt
-    ```
-
     Ejecuta el siguiente comando para levantar todos los contenedores necesarios:
     ```bash
-    docker-compose up --build
+    docker compose up --build -d
     ```
 
 ## Autenticación y scopes
@@ -49,8 +35,29 @@ Está desarrollado en Python utilizando el framework FastAPI.
 - Todas las peticiones son protegidas y requieren autorización:
     - `read` — para operaciones GET
     - `write` — para crear/actualizar/eliminar (POST, PUT, PATCH, DELETE)
-    
-## 2. Obtener Token de Autorización en Postman
+
+## 2. Tres opciones:
+## A. Usar el Script Automatizado
+
+El script probar_api.sh(para mac) o el contenedor de helper hará todo:
+Creará el cliente de Hydra (si no existe).
+Pedirá un token de acceso.
+Hará una prueba de los endpoints con ese token.
+
+puedes usar para el contenedor con las peticiones y la autenticación:
+
+    ```bash
+    docker-compose run --rm helper
+    ```
+
+o puedes usar el documento con las mismas peticiones y la autenticación:
+
+    ```bash
+    chmod +x probar_api.sh
+    ./probar_api.sh
+    ```
+
+## B. Obtener Token de Autorización en Postman
 
 1. Ve a la pestaña "Authorization" de tu petición o workspace
 2. En el menú, selecciona **OAuth 2.0**
@@ -60,14 +67,14 @@ Está desarrollado en Python utilizando el framework FastAPI.
    - **Access Token URL**: `http://localhost:4444/oauth2/token`
    - **Client ID**: `machine-client`
    - **Client Secret**: `machinesecret`
-   - **Scope**: `read, write`
+   - **Scope**: `read` y otro de `write`
    - **Client Authentication**: Basic Auth Header
 4. Haz clic en "Get New Access Token"
 5. Usa el token generado
 
-### Crear cliente en Hydra (si no existe)
+### C. Crear cliente en Hydra (si no existe)
 
-Si tu entorno no tiene aún un cliente OAuth para usar con Client Credentials, crea uno usando la API Admin de Hydra (escucha en el puerto 4445). 
+Si tu entorno no tiene aún un cliente OAuth para usar con Client Credentials, crea uno de Hydra (escucha en el puerto 4445). 
 
 ```bash
 curl -s -X POST http://localhost:4445/clients \
@@ -79,12 +86,12 @@ curl -s -X POST http://localhost:4445/clients \
         "response_types": ["token"],
         "scope": "read write",
         "token_endpoint_auth_method": "client_secret_basic"
-    }'
+    }' | jq '.'
 ```
 
-### Obtener token (Client Credentials)
+### Obtener token 
 
-Ejemplo usando curl (Client Credentials grant). Hydra expone el endpoint de token en el puerto 4444:
+Hydra expone el endpoint de token en el puerto 4444:
 
 ```bash
 curl -s -X POST "http://localhost:4444/oauth2/token" \
@@ -103,12 +110,13 @@ Respuesta ejemplo (JSON):
 }
 ```
 
-Usa el valor de `access_token` en la cabecera `Authorization: Bearer <token>` para probar los endpoints protegidos.
+Copia el valor de `access_token`.
 
-### Llamada de ejemplo a la API REST con el token
+### Hacer Petición a la api
+Reemplaza <TOKEN> con el token que copiaste.
 
 ```bash
-TOKEN="<pon-aqui-el-access-token>"
+TOKEN="<TOKEN>"
 curl -s -H "Authorization: Bearer $TOKEN" \
     "http://localhost:8000/tasks/?page=1&pageSize=5" | jq '.'
 ```
@@ -117,6 +125,8 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 ## 3. Endpoints y Autorización Requerida
 
 URL del WSDL: http://localhost:8001/task?wsdl
+
+URL de swagger: http://localhost:8000/docs#/
 
 URL del endpoint del servicio para realizar peticiones: http://localhost:8000/tasks
 
@@ -130,7 +140,52 @@ URL del endpoint del servicio para realizar peticiones: http://localhost:8000/ta
 | **PATCH** | `http://localhost:8000/tasks/1` | `write` | Actualizar parcialmente tarea |
 | **DELETE** | `http://localhost:8000/tasks/7` | `write` | Eliminar tarea |
 
-## 4. Ejemplos de Peticiones en Postman
+
+## 4. Ejemplos en terminal
+- Get By Title:
+```bash
+curl -s -H "Authorization: Bearer $TOKEN" \
+    "http://localhost:8000/tasks/getByTitle?title=T" | jq '.'
+```
+
+- Get By Id:
+```bash
+curl -s -H "Authorization: Bearer $TOKEN" \
+    "http://localhost:8000/tasks/1" | jq '.'
+```
+- Create Task:
+```bash
+curl -s -X POST "http://localhost:8000/tasks/" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{"title":"T5","description":"Descripción","endDate":"2025-12-31"}' | jq '.'
+```
+
+- Put Task:
+```bash
+curl -s -X PUT "http://localhost:8000/tasks/1" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{"title":"Título Actualizado","description":"Descripción nueva","isCompleted":true,"endDate":"2025-01-20"}' | jq '.'
+```
+
+- Patch Task:
+
+```bash
+curl -s -X PATCH "http://localhost:8000/tasks/1" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{"isCompleted":false}' | jq '.'
+```
+
+- Delete Task:
+
+```bash
+curl -s -X DELETE "http://localhost:8000/tasks/7" \
+    -H "Authorization: Bearer $TOKEN" | jq '.'
+```
+
+## 5. Ejemplos en Postman
 - Get By Title:
 
 ```bash
@@ -183,6 +238,42 @@ DELETE "http://localhost:8000/tasks/7" \
 | Hydra (OAuth2)  | http://localhost:4444       | 4444   | Servidor OAuth2 (Hydra)      |
 | Hydra Admin     | http://localhost:4445       | 4445   | API Admin de Hydra           |
 | BD     | http://localhost:3307      | 3307   | Base de datos           |
+
+## 7. Problemas con BuildKit en macOS (cache corrupta)
+
+- Builds fallan con errores relacionados con la cache o BuildKit.
+- Docker Desktop muestra mensajes de "cache corrupt" o fallos repetidos al construir imágenes.
+- Contenedores que no arrancan por errores de BuildKit.
+
+1) Hacer backup opcional (si hay imágenes/volúmenes importantes):
+```bash
+docker save -o myimage.tar myimagen:tag
+```
+
+2) Limpiar caches de BuildKit y builder:
+```bash
+docker buildx prune --all --force
+
+docker builder prune --all --force
+
+# elimina imágenes, contenedores detenidos y volúmenes (opcional)
+docker system prune --all --volumes --force
+```
+
+3) Forzar reconstrucción sin caché / desactivar BuildKit temporalmente:
+```bash
+# Desactivar BuildKit solo para esta ejecución
+DOCKER_BUILDKIT=0 docker compose build --no-cache
+
+docker buildx build --no-cache --load .
+```
+
+4) Reiniciar Docker Desktop y volver a levantar:
+
+```bash
+docker compose up --build -d
+```
+
 
 
 

@@ -61,14 +61,14 @@ def get_auth_dependency(required_scope: str):
             # Captura cualquier otro error inesperado
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Authentication failed {e}"
+                detail=f"Fallo la autenticación {e}"
             )
             
         if not is_valid:
         # Si el token no es válido o no tiene el scope requerido
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"No permissions '{required_scope}' is required."
+                detail=f"token invalido '{required_scope}'"
             )
         return True # El token es válido y tiene el scope
 

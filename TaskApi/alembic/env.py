@@ -8,9 +8,13 @@ from sqlalchemy import pool
 from alembic import context
 import os
 
-# this is the Alembic Config object, which provides
-# access to the values within the .ini file in use.
+# objeto de configuración de Alembic para dar un entorno con migraciones
 config = context.config
+
+# asegurar que script_location exista para evitar fallos
+if not config.get_main_option("script_location"):
+    # usar el nombre estándar del directorio alembic para buscarlo
+    config.set_main_option("script_location", "alembic")
 
 db_url = os.getenv("DATABASE_URL")
 

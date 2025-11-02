@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   # Base de datos del api soap (parcial 1)
   soap-db:
@@ -38,7 +36,17 @@ services:
       - microservices_net
     volumes:
       - ../TaskApi:/code
-    command: sh -c "alembic upgrade head && gunicorn --workers 4 --bind 0.0.0.0:8000 app.main:app"
+    command: >-
+      sh -c 'for i in 1 2 3 4 5; do
+        alembic upgrade head && break || sleep 2;
+      done
+      && gunicorn --workers 4 --bind 0.0.0.0:8000 app.main:app'
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import socket,sys; s=socket.socket(); s.settimeout(2); s.connect((\"127.0.0.1\",8000)); s.close()' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
 
   # Servicio de api rest
   taskapi-rest:
@@ -51,9 +59,12 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - taskapi-soap
-      - redis
-      - hydra
+      taskapi-soap:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      hydra:
+        condition: service_started
     networks:
       - microservices_net
     volumes:
@@ -118,6 +129,21 @@ services:
     networks:
       - microservices_net
 
+ # Contenedor helper para ejecutar el script
+  helper:
+    build:
+      context: .
+      dockerfile: Dockerfile.helper
+    container_name: helper
+    depends_on:
+      - hydra
+      - taskapi-rest
+    volumes:
+      - ./hydra-client.sh:/hydra-client.sh:ro
+      - ./client.json:/client.json:ro
+    networks:
+      - microservices_net     
+
 # redes
 networks:
   microservices_net:
@@ -125,8 +151,6 @@ networks:
 
 #volumenes
 volumes:
-  mysql_data:
-    external:
-      name: taskapi_mysql_data
+  mysql_data: 
   hydra_db_data:
   redis_data:

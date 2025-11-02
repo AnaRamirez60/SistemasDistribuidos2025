@@ -8,8 +8,7 @@ from typing import Optional
 # Excepciones
 class soapError(HTTPException):
     def __init__(self, detail: str):
-        # Map general SOAP faults to 502 Bad Gateway to indicate an upstream service error
-        # and provide a readable message for REST clients.
+        # usa 502 para errores de gateway 
         super().__init__(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail=f"soap service error {detail}"
@@ -18,14 +17,14 @@ class soapError(HTTPException):
 
 class soapFailedDependency(HTTPException):
     def __init__(self, detail: str):
-        # Use 424 Failed Dependency when the SOAP fault indicates a dependent service
-        # or a dependency-related failure.
+        # usa 424 para errores de dependencia SOAP
         super().__init__(
             status_code=status.HTTP_424_FAILED_DEPENDENCY,
             detail=f"soap failed dependency {detail}"
         )
 
 class soapNotFound(HTTPException):
+    # usa 404 para recursos no encontrados
     def __init__(self, detail: str = "Task not found in soap "):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -97,6 +96,7 @@ def getTaskByIdSoap(task_id: int):
     except Fault as f:
         fault_text = _fault_text(f)
         fault_code = _fault_code(f)
+        # si no se encuentra la tarea
         if "ResourceNotFound" in fault_code or "Tarea no encontrada" in fault_text:
             raise soapNotFound(detail=fault_text)
         _map_and_raise(fault_text, fault_code)
@@ -114,6 +114,7 @@ def createTaskSoap(task: TaskCreate):
     except Fault as f:
         #excepciones que vienen tambien de soap
         fault_text = _fault_text(f)
+        # si da el titulo vacio o la fecha es en el pasado
         if ("El título es obligatorio." in fault_text or
                 "La fecha de finalización no puede ser en el pasado." in fault_text):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=fault_text)
@@ -136,8 +137,10 @@ def updateTaskSoap(task_id: int, task: TaskUpdate):
     except Fault as f:
         fault_text = _fault_text(f)
         fault_code = _fault_code(f)
+        # si no se encuentra la tarea
         if "ResourceNotFound" in fault_code or "Tarea no encontrada" in fault_text:
             raise soapNotFound(detail=fault_text)
+        # si da el titulo vacio o la fecha es en el pasado
         if ("El título es obligatorio." in fault_text or
                 "La fecha de finalización no puede ser en el pasado." in fault_text):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=fault_text)
@@ -159,8 +162,10 @@ def patchTaskSoap(task_id: int, task: TaskPatch):
     except Fault as f:
         fault_text = _fault_text(f)
         fault_code = _fault_code(f)
+        # si no se encuentra la tarea
         if "ResourceNotFound" in fault_code or "Tarea no encontrada" in fault_text:
             raise soapNotFound(detail=fault_text)
+        # si la fecha es en el pasado
         if ("La fecha de finalización no puede ser en el pasado." in fault_text):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=fault_text)
         _map_and_raise(fault_text, fault_code)
@@ -175,6 +180,7 @@ def deleteTaskSoap(task_id: int):
     except Fault as f:
         fault_text = _fault_text(f)
         fault_code = _fault_code(f)
+        # si no se encuentra la tarea
         if "ResourceNotFound" in fault_code or "Tarea no encontrada" in fault_text:
             raise soapNotFound(detail=fault_text)
         _map_and_raise(fault_text, fault_code)

@@ -31,7 +31,7 @@ def invalidate_cache(redis_conn: redis.Redis, pattern: str):
 def invalidate_task_cache(redis_conn: redis.Redis, task_id: Optional[int] = None):
     # Invalida el caché para una tarea específica 
     if task_id:
-        redis_conn.delete(f"task:{task_id}")
+        redis_conn.delete(f"{task_id}")
 
     # quita cachés de listas para tareas que puedan verse afectadas
-    invalidate_cache(redis_conn, "tasks_list:*")
+    invalidate_cache(redis_conn)
