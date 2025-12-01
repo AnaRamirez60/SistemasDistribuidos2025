@@ -47,6 +47,7 @@ Hará una prueba de los endpoints con ese token.
 Puedes usar el documento con las mismas peticiones y la autenticación:
 
     ```bash
+    xattr -d com.apple.quarantine probar_soap.sh
     chmod +x probar_soap.sh
     ./probar_soap.sh
     ```
@@ -245,6 +246,7 @@ Hará una prueba de los endpoints con ese token.
 Puedes usar el documento con las mismas peticiones y la autenticación:
 
     ```bash
+    xattr -d com.apple.quarantine probar_grpc.sh
     chmod +x probar_grpc.sh
     ./probar_grpc.sh
     ```
