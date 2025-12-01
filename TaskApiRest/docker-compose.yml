@@ -35,10 +35,10 @@ services:
     networks:
       - microservices_net
     volumes:
-      - ../TaskApi:/code
+      - ../TaskApi:/app
     command: >-
       sh -c 'for i in 1 2 3 4 5; do
-        alembic upgrade head && break || sleep 2;
+        alembic -c /app/alembic.ini upgrade head && break || sleep 2;
       done
       && gunicorn --workers 4 --bind 0.0.0.0:8000 app.main:app'
     healthcheck:
@@ -97,6 +97,7 @@ services:
     networks:
       - microservices_net
 
+# Migración de la base de datos de hydra
   hydra-migrate:
     image: oryd/hydra:latest
     container_name: hydra-migrate
@@ -109,6 +110,7 @@ services:
       - microservices_net
     restart: on-failure
 
+# Servicio de hydra
   hydra:
     image: oryd/hydra:latest
     container_name: hydra-auth
@@ -129,20 +131,33 @@ services:
     networks:
       - microservices_net
 
- # Contenedor helper para ejecutar el script
-  helper:
-    build:
-      context: .
-      dockerfile: Dockerfile.helper
-    container_name: helper
-    depends_on:
-      - hydra
-      - taskapi-rest
+# Base de datos del api grpc
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb-grpc
+    ports:
+      - "27017:27017"
     volumes:
-      - ./hydra-client.sh:/hydra-client.sh:ro
-      - ./client.json:/client.json:ro
+      - mongo_data:/data/db
     networks:
-      - microservices_net     
+      - microservices_net
+
+
+  # Servicio de api grpc
+  project-grpc:
+    build:
+      context: ../TaskGRPC
+      dockerfile: Dockerfile
+    container_name: taskapi-grpc
+    depends_on:
+      - mongodb
+    environment:
+      MONGO_URI: mongodb://mongodb:27017
+      GRPC_PORT: 8086
+    ports:
+      - "8086:8086"
+    networks:
+      - microservices_net
 
 # redes
 networks:
@@ -154,3 +169,4 @@ volumes:
   mysql_data: 
   hydra_db_data:
   redis_data:
+  mongo_data:

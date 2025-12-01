@@ -21,7 +21,13 @@ En tu terminal:
 `cd TaskApi`
 
 2. Levantar los Servicios
+Antes de ejecutar docker compose (la red es externa):
 
+```
+docker network create microservices_net
+```
+
+Luego:
 Ejecuta el siguiente comando desde la raíz de tu proyecto (donde se encuentra el archivo docker-compose.yml).
 
 `docker compose up --build -d`
@@ -224,4 +230,206 @@ Ejemplo de body:
    </soapenv:Body>
 
 </soapenv:Envelope>
+```
+
+4. UpdateTask
+
+Ejemplo de body:
+```
+<?xml version="1.0" encoding="utf-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tas="task.management.soap">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <tas:updateTask>
+         <tas:task_id>12</tas:task_id>
+         <tas:title>Título actualizado</tas:title>
+         <tas:description>Descripción modificada</tas:description>
+         <tas:isCompleted>true</tas:isCompleted>
+         <tas:endDate>2025-12-01</tas:endDate>
+      </tas:updateTask>
+   </soapenv:Body>
+</soapenv:Envelope>
+```
+
+5. DeleteTask
+
+Ejemplo de body:
+```
+<?xml version="1.0" encoding="utf-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tas="task.management.soap">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <tas:deleteTask>
+         <tas:task_id>12</tas:task_id>
+      </tas:deleteTask>
+   </soapenv:Body>
+</soapenv:Envelope>
+
+```
+
+6. PatchTask
+
+Ejemplo de body:
+```
+<?xml version="1.0" encoding="utf-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tas="task.management.soap">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <tas:patchTask>
+         <tas:task_id>13</tas:task_id>
+         <tas:description>Solo se cambia la descripción</tas:description>
+         <tas:isCompleted>false</tas:isCompleted>
+      </tas:patchTask>
+   </soapenv:Body>
+</soapenv:Envelope>
+
+```
+
+7. GetAll
+
+Ejemplo de body:
+```
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:tns="task.management.soap">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <tns:getAllTasks>
+         <tns:page>1</tns:page>
+         <tns:pageSize>5</tns:pageSize>
+         <tns:filter>T</tns:filter>
+         <tns:sortBy>endDate</tns:sortBy>
+         <tns:sortOrder>desc</tns:sortOrder>
+      </tns:getAllTasks>
+   </soapenv:Body>
+</soapenv:Envelope>
+
+```
+
+
+## Peticiones con CURL
+
+1. createTask
+```
+curl -X POST http://localhost:8001/task \
+  -H "Content-Type: text/xml" \
+  --data '<?xml version="1.0"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+ <soapenv:Body>
+  <tns:createTask xmlns:tns="task.management.soap">
+   <tns:title>string</tns:title>
+   <tns:description>string</tns:description>
+   <tns:endDate>2025-12-12</tns:endDate>
+  </tns:createTask>
+ </soapenv:Body>
+</soapenv:Envelope>'
+```
+
+2. GetById
+```
+curl -X POST http://localhost:8001/task \
+  -H "Content-Type: text/xml" \
+  --data '<?xml version="1.0"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+ <soapenv:Body>
+  <tns:getTaskById xmlns:tns="task.management.soap">
+   <tns:task_id>14</tns:task_id>
+  </tns:getTaskById>
+ </soapenv:Body>
+</soapenv:Envelope>'
+```
+
+3. GetByTitle
+```
+curl -X POST http://localhost:8001/task \
+  -H "Content-Type: text/xml" \
+  --data '<?xml version="1.0"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+ <soapenv:Body>
+  <tns:getTaskByTitle xmlns:tns="task.management.soap">
+   <tns:title>s</tns:title>
+  </tns:getTaskByTitle>
+ </soapenv:Body>
+</soapenv:Envelope>'
+```
+
+4. UpdateTask
+
+Ejemplo de body:
+```
+curl -X POST http://localhost:8001/task \
+  -H "Content-Type: text/xml" \
+  --data '<?xml version="1.0" encoding="utf-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tas="task.management.soap">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <tas:updateTask>
+         <tas:task_id>14</tas:task_id>
+         <tas:title>Título actualizado</tas:title>
+         <tas:description>Descripción modificada</tas:description>
+         <tas:isCompleted>true</tas:isCompleted>
+         <tas:endDate>2025-12-01</tas:endDate>
+      </tas:updateTask>
+   </soapenv:Body>
+</soapenv:Envelope>'
+```
+
+5. DeleteTask
+
+Ejemplo de body:
+```
+curl -X POST http://localhost:8001/task \
+  -H "Content-Type: text/xml" \
+  --data '<?xml version="1.0" encoding="utf-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tas="task.management.soap">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <tas:deleteTask>
+         <tas:task_id>14</tas:task_id>
+      </tas:deleteTask>
+   </soapenv:Body>
+</soapenv:Envelope>'
+
+```
+
+6. PatchTask
+
+Ejemplo de body:
+```
+curl -X POST http://localhost:8001/task \
+  -H "Content-Type: text/xml" \
+  --data '<?xml version="1.0" encoding="utf-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tas="task.management.soap">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <tas:patchTask>
+         <tas:task_id>14</tas:task_id>
+         <tas:description>Solo se cambia la descripción</tas:description>
+         <tas:isCompleted>false</tas:isCompleted>
+      </tas:patchTask>
+   </soapenv:Body>
+</soapenv:Envelope>'
+
+```
+
+7. GetAll
+
+Ejemplo de body:
+```
+curl -X POST http://localhost:8001/task \
+  -H "Content-Type: text/xml" \
+  --data '<?xml version="1.0"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:tns="task.management.soap">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <tns:getAllTasks>
+         <tns:page>1</tns:page>
+         <tns:pageSize>5</tns:pageSize>
+         <tns:filter>T</tns:filter>
+         <tns:sortBy>endDate</tns:sortBy>
+         <tns:sortOrder>desc</tns:sortOrder>
+      </tns:getAllTasks>
+   </soapenv:Body>
+</soapenv:Envelope>'
+
 ```

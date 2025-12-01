@@ -1,0 +1,20 @@
+{
+  "name": "projectgrpc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "bulk-client": "node bulk-client.js"
+  },
+  "dependencies": {
+    "@grpc/reflection": "^1.0.0",
+    "mongodb": "^6.8.0"
+  },
+  "devDependencies": {
+    "@grpc/grpc-js": "^1.14.1",
+    "@grpc/proto-loader": "^0.8.0",
+    "jest": "^30.2.0",
+    "uuid": "^13.0.0"
+  }
+}
