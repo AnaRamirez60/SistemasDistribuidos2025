@@ -41,7 +41,7 @@ def _fault_text(f: Fault) -> str:
                 return str(val)
             except Exception:
                 pass
-    # string presentación del error
+    # devuelve el error
     return str(f)
 
 
@@ -50,11 +50,12 @@ def _fault_code(f: Fault) -> str:
     return getattr(f, "faultcode", "") or ""
 
 
+# Mapeo de errores
 def _map_and_raise(fault_text: str, fault_code: str):
     ft = (fault_text or "").lower()
     fc = (fault_code or "").lower()
 
-    # contiene palabras que sugieren una falla para 424.
+    # palabras que alertan una falla para 424.
     if "faileddependency" in fc or "failed dependency" in ft or "depend" in ft or "dependencia" in ft:
         raise soapFailedDependency(fault_text)
 
@@ -112,7 +113,7 @@ def createTaskSoap(task: TaskCreate):
         )
         return response
     except Fault as f:
-        #excepciones que vienen tambien de soap
+        #excepciones que vienen de soap
         fault_text = _fault_text(f)
         # si da el titulo vacio o la fecha es en el pasado
         if ("El título es obligatorio." in fault_text or
@@ -123,8 +124,8 @@ def createTaskSoap(task: TaskCreate):
 
 #updateTask
 def updateTaskSoap(task_id: int, task: TaskUpdate):
+    # actualizar tarea
     try:
-        # Reemplazo los datos de la tarea
         response = client.service.updateTask(
             task_id=task_id,
             title=task.title,
@@ -133,7 +134,6 @@ def updateTaskSoap(task_id: int, task: TaskUpdate):
             endDate=task.endDate
         )
         return response
-    #excepciones que vienen tambien de soap
     except Fault as f:
         fault_text = _fault_text(f)
         fault_code = _fault_code(f)
@@ -149,7 +149,6 @@ def updateTaskSoap(task_id: int, task: TaskUpdate):
 #patchTask
 def patchTaskSoap(task_id: int, task: TaskPatch):
     try:
-        # cambia los datos que se quieren modificar y no enviará campos nulos a los que no se les haga cambio
         response = client.service.patchTask(
             task_id=task_id,
             title=task.title,
@@ -158,8 +157,8 @@ def patchTaskSoap(task_id: int, task: TaskPatch):
             endDate=task.endDate
         )
         return response
-        #excepciones que vienen tambien de soap
     except Fault as f:
+        # excepciones que vienen de soap
         fault_text = _fault_text(f)
         fault_code = _fault_code(f)
         # si no se encuentra la tarea
@@ -172,11 +171,9 @@ def patchTaskSoap(task_id: int, task: TaskPatch):
 
 #deleteTask
 def deleteTaskSoap(task_id: int):
-    #elimina la tarea según el id
     try:
         response_message = client.service.deleteTask(task_id=task_id)
         return response_message
-    #excepciones que vienen tambien de soap
     except Fault as f:
         fault_text = _fault_text(f)
         fault_code = _fault_code(f)

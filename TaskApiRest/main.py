@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from redis import Redis
 from app.dependencies.cache import get_redis_connection
 from app.routers import tasks
+from app.routers import projects 
 
 # Variable global para la conexión con Redis
 redis_conn = None
@@ -33,4 +34,5 @@ app = FastAPI(
 
 # router de las tareas
 app.include_router(tasks.router)
+app.include_router(projects.router)
 

@@ -3,6 +3,9 @@ FROM python:3.9-slim
 WORKDIR /code
 
 COPY requirements.txt .
+RUN pip install grpcio grpcio-tools
+COPY app/grpc_stubs /code/app/grpc_stubs
+COPY protos /code/protos
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 COPY . .

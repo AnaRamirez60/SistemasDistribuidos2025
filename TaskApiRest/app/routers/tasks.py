@@ -6,6 +6,7 @@ from app.services import soap_client
 from app.dependencies.cache import get_redis_connection, get_cache, set_cache, invalidate_task_cache
 from app.dependencies.authentication import get_auth_dependency
 from zeep.helpers import serialize_object
+import traceback
 
 # Configuración del router
 router = APIRouter(
@@ -17,9 +18,8 @@ router = APIRouter(
 auth_read = Depends(get_auth_dependency("read"))
 auth_write = Depends(get_auth_dependency("write"))
 
-
+# Normaliza la respuesta a una lista para evitar errores
 def _normalize_existing_list(existing_res):
-    #Normaliza la respuesta del SOAP a una lista de dicts
     existing_dict = serialize_object(existing_res)
     if existing_dict is None:
         return []
@@ -27,13 +27,13 @@ def _normalize_existing_list(existing_res):
         return existing_dict
     return [existing_dict]
 
-
+# Verifica que no exista conflicto de título
 def ensure_title_not_conflicting(title: str, current_id: Optional[int] = None):
     # Normalizar entrada
     if not title:
         return
 
-# Consulta el SOAP por title y lanza HTTPException 409 si existe otra tarea con ese título.
+    # Consulta el SOAP por title y lanza HTTPException 409 si existe otra tarea con ese título.
     existing = soap_client.getTaskByTitleSoap(title)
     existing_list = _normalize_existing_list(existing)
     # Normalizar título
@@ -47,6 +47,7 @@ def ensure_title_not_conflicting(title: str, current_id: Optional[int] = None):
         except Exception:
             et_title = None
             et_id = None
+
 
         if et_title and et_title.strip().lower() == title_norm:
             # si current_id es none cualquier match es conflicto
@@ -62,12 +63,10 @@ def ensure_title_not_conflicting(title: str, current_id: Optional[int] = None):
                 # si no podemos parsear id se considera conflicto por seguridad
                 raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                                     detail=f"Una tarea con el título '{title}' ya existe.")
-
 # Endpoint para get all con paginación
-@router.get(
-    "/", 
-    response_model=PaginatedTaskResponse)
+@router.get("/", response_model=PaginatedTaskResponse)
 def getAllTask(
+    # Parámetros de consulta
     page: int = Query(1, ge=1),
     pageSize: int = Query(10, ge=1, le=100),
     filter: Optional[str] = Query(None),
@@ -75,7 +74,7 @@ def getAllTask(
     sortOrder: str = Query("asc", pattern="^(asc|desc)$"),
     redis: Redis = Depends(get_redis_connection),
     request: Request = None,
-    _auth: bool = auth_read 
+    _auth: bool = auth_read # necesita la autorización de read
 ):
     # Crear clave de caché para esta consulta
     cache_key = f"tasks_list:p{page}:ps{pageSize}:f{filter}:s{sortBy}:so{sortOrder}"
@@ -134,9 +133,8 @@ def getAllTask(
     # Devolver la respuesta
     return response_pydantic
 
-@router.get(
-    "/getByTitle",
-    response_model=List[TaskResponse])
+# Endpoint para get by title
+@router.get("/getByTitle", response_model=List[TaskResponse])
 def getTaskByTitle(
     title: str = Query(..., min_length=1), # El título lo dan en un query param
     request: Request = None,
@@ -150,9 +148,8 @@ def getTaskByTitle(
     # normalizar a lista
     return [TaskResponse.model_validate(task) for task in response_list_dict]
 
-@router.get(
-    "/{task_id}", 
-    response_model=TaskResponse)
+# Endpoint para get by id
+@router.get("/{task_id}", response_model=TaskResponse)
 def getTaskById(
     # El id de la tarea va en la ruta
     task_id: int,
@@ -179,10 +176,8 @@ def getTaskById(
     # Devolver la respuesta
     return response_pydantic
 
-@router.post(
-    "/", 
-    response_model=TaskResponse, 
-    status_code=status.HTTP_201_CREATED)
+# Endpoint para crear tarea
+@router.post("/", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)
 def createTask(
     # La petición para crear la tarea
     task: TaskCreate,
@@ -193,26 +188,36 @@ def createTask(
     redis: Redis = Depends(get_redis_connection),
     _auth: bool = auth_write #necesita la autorización de write
 ):
-    # si existe otra tarea con el mismo título
-    ensure_title_not_conflicting(task.title)
-    # Llamar al SOAP para crear la tarea
-    new_task = soap_client.createTaskSoap(task)
+    try:
+        # si existe otra tarea con el mismo título
+        ensure_title_not_conflicting(task.title)
+        # Llamar al SOAP para crear la tarea
+        new_task = soap_client.createTaskSoap(task)
 
-    # borra caché de la listas
-    invalidate_task_cache(redis) 
+        # borra caché de la listas usando la función unificada
+        invalidate_task_cache(redis)
 
-    # Convertimos a dict para Pydantic
-    new_task_dict = serialize_object(new_task)
-    url = request.url_for("getTaskById", task_id=new_task_dict['id'])
-    # Añadir header Location
-    response.headers["Location"] = str(url)
-    # Devolver la nueva tarea creada
-    return TaskResponse.model_validate(new_task_dict)
+        # Convertimos a dict para Pydantic
+        new_task_dict = serialize_object(new_task)
+        url = request.url_for("getTaskById", task_id=new_task_dict['id'])
+        # Añadir header Location
+        response.headers["Location"] = str(url)
+        # Devolver la nueva tarea creada
+        return TaskResponse.model_validate(new_task_dict)
+    
+    # manejo de excepciones
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error: {e}")
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}"
+        )
 
-@router.put(
-    # Actualiza una tarea según su id en la url
-    "/{task_id}", 
-    response_model=TaskResponse)
+# Endpoint para put tarea 
+@router.put("/{task_id}", response_model=TaskResponse)
 def update_task_put(
     # El id de la tarea va en la ruta
     task_id: int,
@@ -222,29 +227,33 @@ def update_task_put(
     redis: Redis = Depends(get_redis_connection),
     _auth: bool = auth_write # necesita la autorización de write
 ):
-    # Llamar al soap
-    # si existe otra tarea con el mismo título
-    ensure_title_not_conflicting(task.title, current_id=task_id)
-
-    updated_task = soap_client.updateTaskSoap(task_id, task)
-
-    #Invalidar cache
-    invalidate_task_cache(redis, task_id=task_id)
-
-    # Convertimos a dict para Pydantic
-    updated_task_dict = serialize_object(updated_task)
     try:
-        request_obj = Request.__call__
-    except Exception:
-        request_obj = None
-    if isinstance(updated_task_dict, dict) and updated_task_dict.get("id") is not None:
-         pass
-    return TaskResponse.model_validate(updated_task_dict)
+        # Llamar al soap
+        # si existe otra tarea con el mismo título
+        ensure_title_not_conflicting(task.title, current_id=task_id)
 
-@router.patch(
-    # Patch según su id en la url
-    "/{task_id}", 
-    response_model=TaskResponse)
+        updated_task = soap_client.updateTaskSoap(task_id, task)
+
+        # Invalidar cache usando la función unificada
+        invalidate_task_cache(redis, task_id)
+
+        # Convertimos a dict para Pydantic
+        updated_task_dict = serialize_object(updated_task)
+        return TaskResponse.model_validate(updated_task_dict)
+    
+    # manejo de excepciones
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error: {e}")
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}"
+        )
+
+# Endpoint para patch tarea
+@router.patch("/{task_id}", response_model=TaskResponse)
 def updateTask(
     # El id de la tarea va en la ruta
     task_id: int,
@@ -254,32 +263,41 @@ def updateTask(
     redis: Redis = Depends(get_redis_connection),
     _auth: bool = auth_write # necesita la autorización de write
 ):
-    # llamar al soap para control de errores
-    task_data = task.model_dump(exclude_unset=True)
+    try:
+        # llamar al soap para control de errores
+        task_data = task.model_dump(exclude_unset=True)
 
-    # Si se quiere actualizar el título, comprobar conflictos
-    if "title" in task_data and task_data.get("title"):
-        title_val = task_data.get("title").strip()
-        ensure_title_not_conflicting(title_val, current_id=task_id)
+        # Si se quiere actualizar el título, comprobar conflictos
+        if "title" in task_data and task_data.get("title"):
+            title_val = task_data.get("title").strip()
+            ensure_title_not_conflicting(title_val, current_id=task_id)
 
-    # Creamos un TaskPatch object para que zeep maneje nones
-    patch_obj = TaskPatch(**task_data)
+        # Creamos un TaskPatch object para que zeep maneje nones
+        patch_obj = TaskPatch(**task_data)
 
-    #llamar al soap
-    updated_task = soap_client.patchTaskSoap(task_id, patch_obj)
+        # llamar al soap
+        updated_task = soap_client.patchTaskSoap(task_id, patch_obj)
 
-    #Invalidar caché
-    invalidate_task_cache(redis, task_id=task_id)
+        # Invalidar caché usando la función unificada
+        invalidate_task_cache(redis, task_id)
 
-    # Convertimos a dict para Pydantic
-    updated_task_dict = serialize_object(updated_task)
-    return TaskResponse.model_validate(updated_task_dict)
+        # Convertimos a dict para Pydantic
+        updated_task_dict = serialize_object(updated_task)
+        return TaskResponse.model_validate(updated_task_dict)
+    
+    # manejo de excepciones
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error: {e}")
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}"
+        )
 
-@router.delete(
-    # Elimina una tarea según su id en la url
-    "/{task_id}", 
-    # No devuelve contenido
-    status_code=status.HTTP_204_NO_CONTENT)
+# Endpoint para delete tarea
+@router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_task(
     # El id de la tarea va en la ruta
     task_id: int,
@@ -287,10 +305,22 @@ def delete_task(
     redis: Redis = Depends(get_redis_connection),
     _auth: bool = auth_write # necesita la autorización de write
 ):
-    # Llamar al SOAP 
-    soap_client.deleteTaskSoap(task_id)
+    try:
+        # Llamar al SOAP 
+        soap_client.deleteTaskSoap(task_id)
 
-    # Invalidar caché
-    invalidate_task_cache(redis, task_id=task_id)
-    # Devolver que la petición se completo, no envia contenido
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+        # Invalidar caché usando la función unificada
+        invalidate_task_cache(redis, task_id)
+        # Devolver que la petición se completo, no envia contenido
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    
+    # manejo de excepciones
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error: {e}")
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}"
+        )
