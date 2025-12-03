@@ -1,6 +1,7 @@
 using ShopApi.Infrastructure.Documents;
 using ShopApi.Models;
 using Google.Protobuf.WellKnownTypes;
+using MongoDB.Bson;
 
 namespace ShopApi.Mappers;
 
@@ -8,10 +9,7 @@ public static class ShopMapper
 {
     public static Shop ToDomain(this ShopDocument document)
     {
-        if (document is null)
-        {
-            return null;
-        }
+        if (document is null) throw new ArgumentNullException(nameof(document));
         return new Shop
         {
             Id = document.Id,
@@ -27,6 +25,7 @@ public static class ShopMapper
 
     public static ShopResponse ToResponse(this Shop shop)
     {
+        if (shop is null) throw new ArgumentNullException(nameof(shop));
         return new ShopResponse
         {
             Id = shop.Id,
@@ -42,6 +41,7 @@ public static class ShopMapper
 
     public static Shop ToModel(this CreateShopRequest request)
     {
+        if (request is null) throw new ArgumentNullException(nameof(request));
         return new Shop
         {
             Name = request.Name,
@@ -56,6 +56,7 @@ public static class ShopMapper
 
     public static ShopDocument ToDocument(this Shop shop)
     {
+        if (shop is null) throw new ArgumentNullException(nameof(shop));
         return new ShopDocument
         {
             Id = shop.Id,
@@ -68,4 +69,5 @@ public static class ShopMapper
             Stock = shop.Stock,
         };
     }
+
 }

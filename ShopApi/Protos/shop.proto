@@ -5,12 +5,15 @@ package shoppb;
 option csharp_namespace = "ShopApi";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 service ShopService {
     rpc CreateShops (stream CreateShopRequest) returns (CreateShopResponse);
     rpc GetAllShopsByName (ShopsByNameRequest) returns (stream ShopResponse);
-    }
-
+    rpc GetShopById (ShopByIdRequest) returns (ShopResponse);
+    rpc DeleteShop (ShopByIdRequest) returns (google.protobuf.Empty);
+    rpc UpdateShop (UpdateShopRequest) returns (google.protobuf.Empty);
+}
 
 message ShopsByNameRequest {
     string name = 1;
@@ -41,4 +44,19 @@ message ShopResponse {
     google.protobuf.Timestamp expiration_date = 7;
     int32 stock = 8;
     google.protobuf.Timestamp created_at = 9;
+}
+
+message ShopByIdRequest {
+    string id = 1;
+}
+
+message UpdateShopRequest {
+    string id = 1;
+    string name = 2;
+    string category = 3;
+    string description = 4;
+    int32 price = 5;
+    int32 cost = 6;
+    google.protobuf.Timestamp expiration_date = 7;
+    int32 stock = 8;
 }
