@@ -9,8 +9,17 @@ services:
       MYSQL_DATABASE: task
     ports:
       - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
     networks:
       - task-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p1234"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
 # construye el contenedor de la aplicación
   app:
     build: .
@@ -20,10 +29,17 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
+    volumes:
+      - .:/app 
     networks:
       - task-network
+    command: sh -c "alembic upgrade head && gunicorn --workers 4 --bind 0.0.0.0:8000 app.main:app"
 
 networks:
   task-network:
     driver: bridge
+
+volumes:
+  mysql_data:
